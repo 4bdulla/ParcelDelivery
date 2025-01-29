@@ -1,0 +1,22 @@
+﻿api:
+  dashboard: true
+
+log:
+  level: DEBUG
+  format: json
+
+accessLog: 
+  format: json
+
+ping: {}
+
+entryPoints:
+  websecure:
+    address: ":443"
+  database:
+    address: ":1433"
+
+providers:    
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false

@@ -1,0 +1,161 @@
+﻿volumes:
+  db-data:
+#  prometheus-data:
+#  grafana-data:
+
+
+services:
+  proxy:
+    image: traefik:latest
+    container_name: proxy
+    ports:
+      - "443:443"
+      - "1433:1433"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+    volumes:
+      - ./proxy/traefik.yml:/etc/traefik/traefik.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  api-gateway:
+    image: api-gateway
+    container_name: api-gateway
+    build:
+      context: ../ApiGateway
+      dockerfile: Dockerfile
+    environment:
+      - RABBIT_HOST=$RABBIT_HOST
+      - RABBIT_USER=$RABBIT_USER
+      - RABBIT_PASSWORD=$RABBIT_PASSWORD
+      - AUTH_HOST=$AUTH_HOST
+      - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+    labels:
+      - "prometheus-job=api-gateway"
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-gateway.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.api-gateway.entrypoints=websecure"
+    depends_on:
+      - auth-api
+      - parcel-api
+  
+  auth-api:
+    image: auth-api
+    container_name: $AUTH_HOST
+    build:
+      context: ../AuthApi
+      dockerfile: Dockerfile
+    environment:
+      - RABBIT_HOST=$RABBIT_HOST
+      - RABBIT_USER=$RABBIT_USER
+      - RABBIT_PASSWORD=$RABBIT_PASSWORD
+      - DB_HOST=$DB_HOST
+      - DATABASE=AuthApi
+      - DB_PASSWORD=$DB_PASSWORD
+      - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+    labels:
+      - "prometheus-job=auth-api"
+    depends_on:
+      - sql-server
+      - rabbit-mq
+  
+  parcel-api:
+    image: parcel-api
+    container_name: parcel-api
+    build:
+      context: ../ParcelApi
+      dockerfile: Dockerfile
+    environment:
+      - RABBIT_HOST=$RABBIT_HOST
+      - RABBIT_USER=$RABBIT_USER
+      - RABBIT_PASSWORD=$RABBIT_PASSWORD
+      - DB_HOST=$DB_HOST
+      - DATABASE=ParcelApi
+      - DB_PASSWORD=$DB_PASSWORD
+      - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+    labels:
+      - "prometheus-job=parcel-api"
+    depends_on:
+      - sql-server
+      - rabbit-mq
+  
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:latest
+    container_name: $DB_HOST
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=$DB_PASSWORD
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.loop-sql-db.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.loop-sql-db.entrypoints=database"
+    volumes:
+      - db-data:/var/opt/mssql
+
+  rabbit-mq:
+    image: masstransit/rabbitmq:latest
+    container_name: $RABBIT_HOST
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=$RABBIT_USER
+      - RABBITMQ_DEFAULT_PASS=$RABBIT_PASSWORD
+        
+        #  prometheus:
+        #    image: prom/prometheus
+        #    user: root
+        #    container_name: prometheus
+        #    pull_policy: missing
+        #    restart: unless-stopped
+        #    command:
+        #      - '--config.file=/etc/prometheus/prometheus.yml'
+        #      - '--storage.tsdb.path=/prometheus'
+        #      - '--storage.tsdb.retention.size=15GB'
+        #      - '--storage.tsdb.retention.time=60d'
+        #      - '--enable-feature=exemplar-storage'
+        #    labels:
+        #      - "traefik.enable=true"
+        #      - "traefik.http.routers.prometheus.tls=true"
+        #      - "traefik.http.routers.prometheus.tls.certresolver=default"
+        #      - "traefik.http.routers.prometheus.rule=Host(`prometheus.miloyapp.com`)"
+        #      - "traefik.http.routers.prometheus.middlewares=basic-auth@file"
+        #      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+        #    volumes:
+        #      - prometheus-data:/prometheus
+        #      - $PROMETHEUS_DIRECTORY:/etc/prometheus/
+        #      - /var/run/docker.sock:/var/run/docker.sock
+        #    logging:
+        #      driver: loki
+        #      options:
+        #        loki-url: http://172.18.0.18:3100/loki/api/v1/push
+        #
+        #  grafana:
+        #    image: grafana/grafana-oss
+        #    container_name: grafana
+        #    pull_policy: missing
+        #    restart: unless-stopped
+        #    depends_on:
+        #      - prometheus
+        #    volumes:
+        #      - grafana-data:/var/lib/grafana
+        #      - $GRAFANA_DIRECTORY:/etc/grafana/provisioning/
+        #    logging:
+        #      driver: loki
+        #      options:
+        #        loki-url: http://172.18.0.18:3100/loki/api/v1/push
+        #
+        #  loki:
+        #    image: grafana/loki
+        #    container_name: loki
+        #    restart: always
+        #    pull_policy: missing
+        #    networks:
+        #      default:
+        #        ipv4_address: 172.18.0.18
+        #    command:
+        #      -config.file=/etc/loki/local-config.yaml
+        #      -server.grpc-max-recv-msg-size-bytes=10000000
+        #      -server.grpc-max-send-msg-size-bytes=10000000
+        
