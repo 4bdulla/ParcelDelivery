@@ -1,6 +1,7 @@
-﻿namespace Core.Commands;
+﻿using Core.Dto;
 
-using Core.Dto;
+
+namespace Core.Commands.Parcel;
 
 /// <summary>
 /// Request to cancel a parcel.

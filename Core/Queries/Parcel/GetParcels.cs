@@ -1,11 +1,12 @@
 ﻿using Core.Dto;
 
-namespace Core.Queries;
+
+namespace Core.Queries.Parcel;
 
 /// <summary>
 /// Request to get all parcels.
 /// </summary>
-public class GetParcelsRequest { }
+public class GetParcelsRequest;
 
 /// <summary>
 /// Response containing all parcels.

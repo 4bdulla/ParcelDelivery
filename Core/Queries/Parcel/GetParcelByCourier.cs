@@ -1,6 +1,7 @@
 ﻿using Core.Dto;
 
-namespace Core.Queries;
+
+namespace Core.Queries.Parcel;
 
 /// <summary>
 /// Request to get parcels by courier ID.

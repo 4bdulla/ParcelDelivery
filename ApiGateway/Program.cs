@@ -2,28 +2,27 @@ using System.Reflection;
 
 using ApiGateway;
 
+using Core.Commands.Auth;
 using Core.Common;
-using Core.Queries;
+using Core.Common.ErrorResponses;
+using Core.Common.Options;
 
-using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+
+using NetDevPack.Security.JwtExtensions;
 
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Compact;
 
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+builder.ConfigureConfiguration();
+builder.AddSerilogConfiguration();
 
-builder.Host.UseSerilog((_, services, configuration) => configuration
-    .MinimumLevel.Verbose()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-    .MinimumLevel.Override("MassTransit", LogEventLevel.Warning)
-    .WriteTo.Console(new RenderedCompactJsonFormatter())
-    .ReadFrom.Services(services));
+AuthOptions authOptions = builder.ConfigureAuthOptions();
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
@@ -32,38 +31,45 @@ builder.Services.AddSwaggerGen(options =>
     var coreDocsFilename = $"{typeof(ParcelNotFoundResponse).Assembly.GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, coreDocsFilename));
-});
 
-builder.Services.AddMassTransit(massTransitConfig =>
-{
-    massTransitConfig.AddRequestClient<GetParcelRequest>(new Uri("exchange:parcel-api"));
+    options.AddSecurityDefinition("Bearer",
+        new()
+        {
+            Description = "Bearer {token}",
+            Name = "Authorization",
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey
+        });
 
-    massTransitConfig.UsingRabbitMq((context, rabbitConfig) =>
+    options.AddSecurityRequirement(new()
     {
-        rabbitConfig.Host(
-            "localhost",
-            5672,
-            "/",
-            configurator =>
-            {
-                configurator.Username("guest");
-                configurator.Password("guest");
-            });
-
-        rabbitConfig.ConfigureEndpoints(context);
+        { new() { Reference = new() { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, [] }
     });
 });
 
-var app = builder.Build();
+builder.AddMassTransitConfiguration();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(x =>
+    {
+        x.RequireHttpsMetadata = false;
+        x.SaveToken = true;
+
+        x.SetJwksOptions(new(authOptions.AuthServerAddress, authOptions.JwtIssuer, authOptions.TokenLifetime, authOptions.JwtAudience));
+    });
+
+builder.Services.AddAuthorization();
+
+WebApplication app = builder.Build();
 
 app.UseSerilogRequestLogging();
+app.UseAuthentication();
+app.UseAuthorization();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapEndpoints();
 

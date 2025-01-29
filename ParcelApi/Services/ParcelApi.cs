@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 
-using Core.Commands;
-using Core.Common;
+using Core.Commands.Parcel;
+using Core.Common.ErrorResponses;
 using Core.Dto;
-using Core.Queries;
+using Core.Queries.Parcel;
 
 using MassTransit;
 

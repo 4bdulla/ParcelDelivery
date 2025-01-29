@@ -1,4 +1,4 @@
-﻿namespace Core.Common;
+﻿namespace Core.Common.ErrorResponses;
 
 public class ParcelNotFoundResponse
 {
