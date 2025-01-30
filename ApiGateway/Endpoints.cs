@@ -83,6 +83,11 @@ public static class Endpoints
     }
 
 
+    /// <summary>
+    /// Creates user account.
+    /// </summary>
+    /// <param name="request">The request containing user account details.</param>
+    /// <returns>Access and refresh tokens.</returns>
     private static async Task<IResult> RegisterUser(
         [FromBody] UserRegistrationRequest request,
         [FromServices] IRequestClient<UserRegistrationRequest> client,
@@ -102,6 +107,11 @@ public static class Endpoints
             : Results.Ok(response.Message);
     }
 
+    /// <summary>
+    /// Creates courier account.
+    /// </summary>
+    /// <param name="request">The request containing courier account details.</param>
+    /// <returns>Access and refresh tokens.</returns>
     private static async Task<IResult> RegisterCourier(
         [FromBody] CourierRegistrationRequest request,
         [FromServices] IRequestClient<CourierRegistrationRequest> client,
@@ -121,6 +131,11 @@ public static class Endpoints
             : Results.Ok(response.Message);
     }
 
+    /// <summary>
+    /// Logs user in the system.
+    /// </summary>
+    /// <param name="request">The request containing login details.</param>
+    /// <returns>Access and refresh tokens.</returns>
     private static async Task<IResult> Login(
         [FromBody] LoginRequest request,
         [FromServices] IRequestClient<LoginRequest> client,
@@ -134,6 +149,11 @@ public static class Endpoints
             : Results.Ok(response.Message);
     }
 
+    /// <summary>
+    /// Requests new access token
+    /// </summary>
+    /// <param name="request">The request containing Refresh Token.</param>
+    /// <returns>New access and refresh tokens.</returns>
     private static async Task<IResult> RefreshToken(
         [FromBody] RefreshTokenRequest request,
         [FromServices] IRequestClient<RefreshTokenRequest> client,
@@ -165,7 +185,7 @@ public static class Endpoints
     /// <summary>
     /// Gets a parcel by its ID.
     /// </summary>
-    /// <param name="parcelId">The ID of the parcel.</param>
+    /// <param name="request">The request containing ID of the parcel to search for.</param>
     /// <returns>The parcel details.</returns>
     private static async Task<GetParcelResponse> GetParcel(
         [AsParameters] GetParcelRequest request,
@@ -193,7 +213,7 @@ public static class Endpoints
     /// <summary>
     /// Gets parcels by user ID.
     /// </summary>
-    /// <param name="userId">The ID of the user.</param>
+    /// <param name="request">The request containing User ID to search for parcels.</param>
     /// <returns>The list of parcels for the user.</returns>
     private static async Task<IResult> GetParcelsByUser(
         [AsParameters] GetParcelsByUserRequest request,
@@ -208,7 +228,7 @@ public static class Endpoints
     /// <summary>
     /// Gets parcels by courier ID.
     /// </summary>
-    /// <param name="courierId">The ID of the courier.</param>
+    /// <param name="request">The request containing Courier ID to search for parcels.</param>
     /// <returns>The list of parcels for the courier.</returns>
     private static async Task<IResult> GetParcelsByCourier(
         [AsParameters] GetParcelsByCourierRequest request,
