@@ -5,7 +5,7 @@ EXPOSE 80
 
 # healthcheck
 RUN apk add curl
-HEALTHCHECK CMD curl -f http://localhost:80/healthcheck || exit
+HEALTHCHECK CMD curl -f http://localhost:80/health || exit
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
