@@ -44,7 +44,7 @@ public class ParcelDbContext(DbContextOptions<ParcelDbContext> options) : DbCont
     /// Gets all parcels.
     /// </summary>
     /// <returns>The list of parcels.</returns>
-    public async Task<IEnumerable<Parcel>> GetAllParcelsAsync()
+    public async Task<List<Parcel>> GetAllParcelsAsync()
     {
         return await this.Parcels
             .Include(p => p.DeliveryDetails)

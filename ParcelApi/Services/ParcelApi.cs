@@ -41,7 +41,11 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
             }
         };
 
+        logger.LogDebug("creating parcel {@Parcel}", parcel);
+
         await db.AddParcelAsync(parcel);
+
+        logger.LogInformation("parcel created");
 
         await context.RespondAsync<CreateParcelResponse>(new() { Parcel = mapper.Map<ParcelDto>(parcel) });
     }
@@ -50,19 +54,25 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
     {
         Parcel parcel = await db.GetParcelByIdAsync(context.Message.ParcelId);
 
+        logger.LogInformation("parcel found {@Parcel}", parcel);
+
         await context.RespondAsync<GetParcelResponse>(new() { Parcel = mapper.Map<ParcelDto>(parcel) });
     }
 
     public async Task Consume(ConsumeContext<GetParcelsRequest> context)
     {
-        IEnumerable<Parcel> parcels = await db.GetAllParcelsAsync();
+        List<Parcel> parcels = await db.GetAllParcelsAsync();
+
+        logger.LogInformation("parcel list fetched {Count}", parcels.Count);
 
         await context.RespondAsync<GetParcelsResponse>(new() { Parcels = mapper.Map<IEnumerable<ParcelDto>>(parcels) });
     }
 
     public async Task Consume(ConsumeContext<GetParcelsByUserRequest> context)
     {
-        IEnumerable<Parcel> parcels = await db.GetAllParcelsAsync();
+        List<Parcel> parcels = await db.GetAllParcelsAsync();
+
+        logger.LogInformation("parcel list fetched {Count}", parcels.Count);
 
         await context.RespondAsync<GetParcelsByUserResponse>(new()
         {
@@ -72,7 +82,9 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
 
     public async Task Consume(ConsumeContext<GetParcelsByCourierRequest> context)
     {
-        IEnumerable<Parcel> parcels = await db.GetAllParcelsAsync();
+        List<Parcel> parcels = await db.GetAllParcelsAsync();
+
+        logger.LogInformation("parcel list fetched {Count}", parcels.Count);
 
         await context.RespondAsync<GetParcelsByCourierResponse>(new()
         {
@@ -84,6 +96,8 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
     {
         Parcel parcel = await db.GetParcelByIdAsync(context.Message.ParcelId);
 
+        logger.LogDebug("parcel found: {@Parcel}", parcel);
+
         if (parcel is null)
         {
             await context.RespondAsync<ParcelNotFoundResponse>(new() { ParcelId = context.Message.ParcelId });
@@ -91,27 +105,64 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
             return;
         }
 
+        if (parcel.Status is not ParcelStatus.Pending)
+        {
+            logger.LogWarning("attempt to update delivery address of not pending parcel");
+
+            await context.RespondAsync<UpdateDestinationResponse>(new()
+            {
+                Parcel = mapper.Map<ParcelDto>(parcel),
+                Updated = false
+            });
+
+            return;
+        }
+
+        string oldDestinationAddress = parcel.DeliveryDetails.DestinationAddress;
+
         parcel.DeliveryDetails.DestinationAddress = context.Message.NewDestination;
+
+        logger.LogDebug("updating parcel destination address: from {OldAddress} to {NewAddress}",
+            oldDestinationAddress,
+            parcel.DeliveryDetails.DestinationAddress);
 
         await db.UpdateParcelAsync(parcel);
 
-        await context.RespondAsync<UpdateDestinationResponse>(new() { Parcel = mapper.Map<ParcelDto>(parcel) });
+        logger.LogInformation("parcel destination address updated: {@Parcel}", parcel);
+
+        await context.RespondAsync<UpdateDestinationResponse>(new()
+        {
+            Parcel = mapper.Map<ParcelDto>(parcel),
+            Updated = true
+        });
     }
 
     public async Task Consume(ConsumeContext<UpdateParcelStatusRequest> context)
     {
         Parcel parcel = await db.GetParcelByIdAsync(context.Message.ParcelId);
 
+        logger.LogDebug("parcel found: {@Parcel}", parcel);
+
         if (parcel is null)
         {
+            logger.LogWarning("parcel not found");
+
             await context.RespondAsync<ParcelNotFoundResponse>(new() { ParcelId = context.Message.ParcelId });
 
             return;
         }
 
+        ParcelStatus oldStatus = parcel.Status;
+
         parcel.Status = context.Message.NewStatus;
 
+        logger.LogDebug("updating parcel status: from {OldStatus} to {NewStatus}",
+            oldStatus,
+            parcel.Status);
+
         await db.UpdateParcelAsync(parcel);
+
+        logger.LogInformation("parcel status updated: {@Parcel}", parcel);
 
         await context.RespondAsync<UpdateParcelStatusResponse>(new() { Parcel = mapper.Map<ParcelDto>(parcel) });
     }
@@ -120,16 +171,29 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
     {
         Parcel parcel = await db.GetParcelByIdAsync(context.Message.ParcelId);
 
+        logger.LogDebug("parcel found: {@Parcel}", parcel);
+
         if (parcel is null)
         {
+            logger.LogWarning("parcel not found");
+
             await context.RespondAsync<ParcelNotFoundResponse>(new() { ParcelId = context.Message.ParcelId });
 
             return;
         }
 
+        int? oldCourierId = parcel.CourierId;
+
         parcel.CourierId = context.Message.CourierId;
 
+        logger.LogDebug("assigning parcel: from {OldCourierId} to {NewCourierId}",
+            oldCourierId,
+            parcel.Status);
+
         await db.UpdateParcelAsync(parcel);
+
+        logger.LogInformation("parcel courier updated: {@Parcel}", parcel);
+
         await context.RespondAsync<AssignParcelResponse>(new() { Parcel = mapper.Map<ParcelDto>(parcel) });
     }
 
@@ -137,10 +201,40 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
     {
         Parcel parcel = await db.GetParcelByIdAsync(context.Message.ParcelId);
 
+        logger.LogDebug("parcel found: {@Parcel}", parcel);
+
+        if (parcel is null)
+        {
+            logger.LogWarning("parcel not found");
+
+            await context.RespondAsync<ParcelNotFoundResponse>(new() { ParcelId = context.Message.ParcelId });
+
+            return;
+        }
+
+        if (parcel.Status is ParcelStatus.Assigned or ParcelStatus.Delivered or ParcelStatus.InProgress)
+        {
+            logger.LogWarning("attempt to cancel completed delivery {@Parcel}", parcel);
+
+            await context.RespondAsync<CancelParcelResponse>(new()
+            {
+                Parcel = mapper.Map<ParcelDto>(parcel),
+                Canceled = false
+            });
+
+            return;
+        }
+
         parcel.Status = ParcelStatus.Canceled;
 
         await db.UpdateParcelAsync(parcel);
 
-        await context.RespondAsync<CancelParcelResponse>(new() { Parcel = mapper.Map<ParcelDto>(parcel) });
+        logger.LogInformation("parcel canceled {@Parcel}", parcel);
+
+        await context.RespondAsync<CancelParcelResponse>(new()
+        {
+            Parcel = mapper.Map<ParcelDto>(parcel),
+            Canceled = true
+        });
     }
 }

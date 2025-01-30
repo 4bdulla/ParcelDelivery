@@ -18,7 +18,7 @@ public interface IParcelDbContext
     /// Gets all parcels.
     /// </summary>
     /// <returns>The list of parcels.</returns>
-    Task<IEnumerable<Parcel>> GetAllParcelsAsync();
+    Task<List<Parcel>> GetAllParcelsAsync();
 
     /// <summary>
     /// Adds a new parcel.
