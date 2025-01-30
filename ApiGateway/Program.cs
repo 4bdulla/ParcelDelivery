@@ -20,6 +20,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureConfiguration();
 builder.AddSerilogConfiguration();
+builder.AddMonitoring();
 
 AuthOptions authOptions = builder.ConfigureAuthOptions();
 
@@ -67,10 +68,22 @@ WebApplication app = builder.Build();
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseSwagger();
 app.UseSwaggerUI();
-
+app.UseMonitoring();
 app.MapEndpoints();
 
-app.Run();
+try
+{
+    app.Run();
+    app.ReportServiceUp();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Unhandled exception: {Message}", ex.Message);
+}
+finally
+{
+    Log.CloseAndFlush();
+    app.ReportServiceDown();
+}

@@ -1,5 +1,7 @@
 ﻿using ConfigurationSubstitution;
 
+using Core.Common.Filters;
+using Core.Common.Monitoring;
 using Core.Common.Options;
 
 using MassTransit;
@@ -13,6 +15,8 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+
+using Prometheus;
 
 
 namespace Core.Common;
@@ -33,6 +37,12 @@ public static class Extensions
             .MinimumLevel.Override("MassTransit", LogEventLevel.Warning)
             .WriteTo.Console(new RenderedCompactJsonFormatter())
             .ReadFrom.Services(services));
+    }
+
+    public static void AddMonitoring(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddSingleton<GlobalMetricReporter>();
+        builder.Services.AddHealthChecks().ForwardToPrometheus(new PrometheusHealthCheckPublisherOptions());
     }
 
     public static void AddSqlDbContext<TDbContextInterface, TDbContextImplementation>(this WebApplicationBuilder builder)
@@ -56,6 +66,8 @@ public static class Extensions
 
             massTransitConfig.UsingRabbitMq((context, rabbitConfig) =>
             {
+                rabbitConfig.UseFilters();
+
                 rabbitConfig.Host(
                     rabbitOptions.Host,
                     rabbitOptions.Port,
@@ -80,6 +92,7 @@ public static class Extensions
         return authOptions;
     }
 
+
     public static void UseDbInDevelopment<TDbContext>(this WebApplication app)
     where TDbContext : DbContext
     {
@@ -93,5 +106,39 @@ public static class Extensions
         bool created = dbContext.Database.EnsureCreated();
 
         Log.Information("database created: {Created}", created);
+    }
+
+    public static void UseMonitoring(this WebApplication app)
+    {
+        app.UseHealthChecks("/health");
+
+        app.UseHttpMetrics(o => o.ReduceStatusCodeCardinality());
+
+        app.MapMetrics();
+    }
+
+    public static void ReportServiceUp(this WebApplication app)
+    {
+        using IServiceScope scope = app.Services.CreateScope();
+
+        GlobalMetricReporter reporter = scope.ServiceProvider.GetRequiredService<GlobalMetricReporter>();
+
+        reporter.ServiceUp(app.Environment.ApplicationName);
+    }
+
+    public static void ReportServiceDown(this WebApplication app)
+    {
+        using IServiceScope scope = app.Services.CreateScope();
+
+        GlobalMetricReporter reporter = scope.ServiceProvider.GetRequiredService<GlobalMetricReporter>();
+
+        reporter.ServiceDown(app.Environment.ApplicationName);
+    }
+
+    private static void UseFilters<T>(this IPipeConfigurator<T> configurator)
+    where T : class, PipeContext
+    {
+        configurator.AddPipeSpecification(new LoggingSpecification<T>());
+        configurator.AddPipeSpecification(new MonitoringSpecification<T>(new GlobalMetricReporter()));
     }
 }

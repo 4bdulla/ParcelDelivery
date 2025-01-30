@@ -6,11 +6,14 @@ using Core.Common.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 
+using Serilog;
+
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.ConfigureConfiguration();
 builder.AddSerilogConfiguration();
+builder.AddMonitoring();
 
 AuthOptions authOptions = builder.ConfigureAuthOptions();
 
@@ -51,7 +54,20 @@ WebApplication app = builder.Build();
 app.UseJwksDiscovery();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseMonitoring();
 app.UseDbInDevelopment<AuthDbContext>();
 
-app.Run();
+try
+{
+    app.Run();
+    app.ReportServiceUp();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Unhandled exception: {Message}", ex.Message);
+}
+finally
+{
+    Log.CloseAndFlush();
+    app.ReportServiceDown();
+}
