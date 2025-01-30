@@ -1,8 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
+using AuthApi.Data;
+
 using Core.Commands.Auth;
 using Core.Common;
+using Core.Common.Enums;
 using Core.Common.ErrorResponses;
 using Core.Common.Options;
 
@@ -22,8 +25,8 @@ namespace AuthApi.Services;
 
 public class AuthApi(
     IOptions<AuthOptions> options,
-    UserManager<IdentityUser> userManager,
-    RoleManager<IdentityRole> roleManager,
+    UserManager<DomainUser> userManager,
+    RoleManager<IdentityRole<int>> roleManager,
     IJwtService jwtService,
     ILogger<AuthApi> logger) :
     IConsumer<UserRegistrationRequest>,
@@ -37,7 +40,7 @@ public class AuthApi(
     {
         try
         {
-            object result = await this.RegisterAsync(context.Message.Username, context.Message.Password, Constants.UserRole);
+            object result = await this.RegisterAsync(context.Message.Username, context.Message.Password, Constants.UserRole, UserType.User);
 
             await context.RespondAsync(result);
         }
@@ -53,7 +56,11 @@ public class AuthApi(
     {
         try
         {
-            object result = await this.RegisterAsync(context.Message.Username, context.Message.Password, Constants.CourierRole);
+            object result = await this.RegisterAsync(
+                context.Message.Username,
+                context.Message.Password,
+                Constants.CourierRole,
+                context.Message.UserType);
 
             await context.RespondAsync(result);
         }
@@ -69,7 +76,7 @@ public class AuthApi(
     {
         try
         {
-            IdentityUser user = await userManager.FindByNameAsync(context.Message.Username);
+            DomainUser user = await userManager.FindByNameAsync(context.Message.Username);
 
             if (user is null)
             {
@@ -106,6 +113,7 @@ public class AuthApi(
 
             await context.RespondAsync<AuthorizationResponse>(new()
             {
+                UserId = user.Id,
                 AccessToken = await this.GenerateAccessToken(user),
                 RefreshToken = await this.GenerateRefreshToken(user)
             });
@@ -145,7 +153,7 @@ public class AuthApi(
                 return;
             }
 
-            IdentityUser user = await userManager.FindByNameAsync(context.Message.Username);
+            DomainUser user = await userManager.FindByNameAsync(context.Message.Username);
 
             if (user is null)
             {
@@ -169,6 +177,7 @@ public class AuthApi(
 
             await context.RespondAsync<AuthorizationResponse>(new()
             {
+                UserId = user.Id,
                 AccessToken = await this.GenerateAccessToken(user),
                 RefreshToken = await this.GenerateRefreshToken(user)
             });
@@ -184,12 +193,11 @@ public class AuthApi(
     }
 
 
-    private async Task<object> RegisterAsync(string username, string password, string role)
+    private async Task<object> RegisterAsync(string username, string password, string role, UserType userType)
     {
-        ConsumeContext<UserRegistrationRequest> context;
-
-        var user = new IdentityUser
+        var user = new DomainUser
         {
+            UserType = userType,
             UserName = username,
             Email = username,
             EmailConfirmed = true
@@ -223,18 +231,19 @@ public class AuthApi(
 
         return new AuthorizationResponse
         {
+            UserId = user.Id,
             AccessToken = await this.GenerateAccessToken(user),
             RefreshToken = await this.GenerateRefreshToken(user)
         };
     }
 
-    private async Task<IdentityResult> AddToRole(IdentityUser user, string role)
+    private async Task<IdentityResult> AddToRole(DomainUser user, string role)
     {
         if (!await roleManager.RoleExistsAsync(role))
         {
             logger.LogDebug("creating role {Role}", role);
 
-            await roleManager.CreateAsync(new IdentityRole(role));
+            await roleManager.CreateAsync(new IdentityRole<int>(role));
         }
 
         logger.LogDebug("adding user {Username} to role {Role}", user.UserName, role);
@@ -242,13 +251,13 @@ public class AuthApi(
         return await userManager.AddToRoleAsync(user, role);
     }
 
-    private async Task<string> GenerateAccessToken(IdentityUser user)
+    private async Task<string> GenerateAccessToken(DomainUser user)
     {
         IList<string> userRoles = await userManager.GetRolesAsync(user);
         var identityClaims = new ClaimsIdentity();
         identityClaims.AddClaims(await userManager.GetClaimsAsync(user));
         identityClaims.AddClaims(userRoles.Select(s => new Claim("role", s)));
-        identityClaims.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, user.Id));
+        identityClaims.AddClaim(new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()));
         identityClaims.AddClaim(new Claim(JwtRegisteredClaimNames.Email, user.Email!));
         identityClaims.AddClaim(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
         identityClaims.AddClaim(new(JwtRegisteredClaimNames.Aud, _options.JwtAudience));
@@ -273,7 +282,7 @@ public class AuthApi(
         return encodedJwt;
     }
 
-    private async Task<string> GenerateRefreshToken(IdentityUser user)
+    private async Task<string> GenerateRefreshToken(DomainUser user)
     {
         var jti = Guid.NewGuid().ToString();
 
@@ -303,7 +312,7 @@ public class AuthApi(
         return handler.WriteToken(securityToken);
     }
 
-    private async Task UpdateLastGeneratedClaim(IdentityUser user, string jti)
+    private async Task UpdateLastGeneratedClaim(DomainUser user, string jti)
     {
         IList<Claim> claims = await userManager.GetClaimsAsync(user);
         var newLastRtClaim = new Claim("LastRefreshToken", jti);

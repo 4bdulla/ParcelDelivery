@@ -1,4 +1,7 @@
-﻿namespace Core.Commands.Auth;
+﻿using Core.Common.Enums;
+
+
+namespace Core.Commands.Auth;
 
 /// <summary>
 /// Represents a request to register a new user.
@@ -19,7 +22,6 @@ public class UserRegistrationRequest
 }
 
 
-
 /// <summary>
 /// Represents a request to register a new courier.
 /// </summary>
@@ -36,4 +38,9 @@ public class CourierRegistrationRequest
     /// </summary>
     /// <example>SecurePass123!</example>
     public string Password { get; set; }
+
+    /// <summary>
+    /// Gets or sets user type
+    /// </summary>
+    public UserType UserType { get; set; }
 }

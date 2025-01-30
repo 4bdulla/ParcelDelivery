@@ -39,7 +39,8 @@ builder.Services
         };
     });
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services
+    .AddIdentity<DomainUser, IdentityRole<int>>(options =>
     {
         options.Password.RequireUppercase = false;
         options.Password.RequireNonAlphanumeric = false;
