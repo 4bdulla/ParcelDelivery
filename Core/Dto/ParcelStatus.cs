@@ -16,12 +16,22 @@ public enum ParcelStatus
     Pending = 1,
 
     /// <summary>
-    /// Delivered.
+    /// Assigned to courier
     /// </summary>
-    Delivered = 2,
+    Assigned = 2,
+
+    /// <summary>
+    /// Parcel being delivered
+    /// </summary>
+    InProgress = 3,
+
+    /// <summary>
+    /// Delivered to destination.
+    /// </summary>
+    Delivered = 4,
 
     /// <summary>
     /// Canceled.
     /// </summary>
-    Canceled = 3
+    Canceled = 5
 }

@@ -19,6 +19,7 @@ public class UpdateDestinationRequest
     public string NewDestination { get; set; }
 }
 
+
 /// <summary>
 /// Response containing updated parcel information.
 /// </summary>
@@ -28,4 +29,9 @@ public class UpdateDestinationResponse
     /// Updated parcel.
     /// </summary>
     public ParcelDto Parcel { get; set; }
+
+    /// <summary>
+    /// Represents if update destination operation was performed
+    /// </summary>
+    public bool Updated { get; set; }
 }
