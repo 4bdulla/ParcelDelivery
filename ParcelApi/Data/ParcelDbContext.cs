@@ -3,6 +3,7 @@
 using ParcelApi.Data.Abstraction;
 using ParcelApi.Data.Models;
 
+
 namespace ParcelApi.Data;
 
 /// <summary>
@@ -30,27 +31,15 @@ public class ParcelDbContext(DbContextOptions<ParcelDbContext> options) : DbCont
     /// </summary>
     /// <param name="id">The parcel ID.</param>
     /// <returns>The parcel.</returns>
-    public async Task<Parcel> GetParcelByIdAsync(int id)
-    {
-        Parcel parcel = await this.Parcels
-            .Include(p => p.DeliveryDetails)
-            .Include(p => p.ParcelDetails)
-            .FirstOrDefaultAsync(p => p.Id.Equals(id));
-
-        return parcel;
-    }
+    public async Task<Parcel> GetParcelByIdAsync(int id) =>
+        await this.Parcels.Include(p => p.DeliveryDetails).Include(p => p.ParcelDetails).FirstOrDefaultAsync(p => p.Id.Equals(id));
 
     /// <summary>
     /// Gets all parcels.
     /// </summary>
     /// <returns>The list of parcels.</returns>
-    public async Task<List<Parcel>> GetAllParcelsAsync()
-    {
-        return await this.Parcels
-            .Include(p => p.DeliveryDetails)
-            .Include(p => p.ParcelDetails)
-            .ToListAsync();
-    }
+    public async Task<List<Parcel>> GetAllParcelsAsync() =>
+        await this.Parcels.Include(p => p.DeliveryDetails).Include(p => p.ParcelDetails).ToListAsync();
 
     /// <summary>
     /// Adds a new parcel.

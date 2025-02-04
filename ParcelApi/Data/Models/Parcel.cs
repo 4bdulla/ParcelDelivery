@@ -6,6 +6,7 @@ using Core.Dto;
 
 using ParcelApi.Data.Abstraction;
 
+
 namespace ParcelApi.Data.Models;
 
 /// <summary>
@@ -13,7 +14,7 @@ namespace ParcelApi.Data.Models;
 /// </summary>
 [AutoMap(typeof(ParcelDto), ReverseMap = true)]
 [Table(nameof(ParcelDbContext.Parcels), Schema = nameof(ParcelApi))]
-public class Parcel : IUniqueItem
+public class Parcel : IUniqueItem, ICloneable
 {
     /// <summary>
     /// Unique identifier.
@@ -44,4 +45,6 @@ public class Parcel : IUniqueItem
     /// Delivery details.
     /// </summary>
     public DeliveryDetails DeliveryDetails { get; set; }
+
+    public object Clone() => base.MemberwiseClone();
 }
