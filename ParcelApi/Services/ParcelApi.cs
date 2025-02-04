@@ -63,7 +63,7 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
     {
         List<Parcel> parcels = await db.GetAllParcelsAsync();
 
-        logger.LogInformation("parcel list fetched {Count}", parcels.Count);
+        logger.LogInformation("parcel list fetched {Count}", parcels?.Count);
 
         await context.RespondAsync<GetParcelsResponse>(new() { Parcels = mapper.Map<IEnumerable<ParcelDto>>(parcels) });
     }
@@ -156,9 +156,7 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
 
         parcel.Status = context.Message.NewStatus;
 
-        logger.LogDebug("updating parcel status: from {OldStatus} to {NewStatus}",
-            oldStatus,
-            parcel.Status);
+        logger.LogDebug("updating parcel status: from {OldStatus} to {NewStatus}", oldStatus, parcel.Status);
 
         await db.UpdateParcelAsync(parcel);
 
@@ -185,10 +183,9 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
         int? oldCourierId = parcel.CourierId;
 
         parcel.CourierId = context.Message.CourierId;
+        parcel.Status = ParcelStatus.Assigned;
 
-        logger.LogDebug("assigning parcel: from {OldCourierId} to {NewCourierId}",
-            oldCourierId,
-            parcel.Status);
+        logger.LogDebug("assigning parcel: from {OldCourierId} to {NewCourierId}", oldCourierId, parcel.Status);
 
         await db.UpdateParcelAsync(parcel);
 
@@ -214,7 +211,7 @@ public class ParcelApi(IParcelDbContext db, IMapper mapper, ILogger<ParcelApi> l
 
         if (parcel.Status is ParcelStatus.Assigned or ParcelStatus.Delivered or ParcelStatus.InProgress)
         {
-            logger.LogWarning("attempt to cancel completed delivery {@Parcel}", parcel);
+            logger.LogWarning("attempt to cancel in progress or completed delivery {@Parcel}", parcel);
 
             await context.RespondAsync<CancelParcelResponse>(new()
             {
