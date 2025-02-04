@@ -4,8 +4,6 @@ using Core.Common;
 using Core.Common.ErrorResponses;
 using Core.Queries.Parcel;
 
-using Microsoft.OpenApi.Models;
-
 
 namespace ApiGateway;
 

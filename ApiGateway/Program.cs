@@ -2,13 +2,11 @@ using System.Reflection;
 
 using ApiGateway;
 
-using Core.Commands.Auth;
 using Core.Common;
 using Core.Common.ErrorResponses;
 using Core.Common.Options;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using NetDevPack.Security.JwtExtensions;
