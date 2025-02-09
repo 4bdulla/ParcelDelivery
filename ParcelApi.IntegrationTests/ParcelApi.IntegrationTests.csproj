@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -11,6 +10,8 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.0"/>
+    <PackageReference Include="MassTransit.TestFramework" Version="8.3.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
     <PackageReference Include="xunit" Version="2.5.3"/>
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
@@ -23,6 +24,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ParcelApi\ParcelApi.csproj" />
     <ProjectReference Include="..\Test.Utility\Test.Utility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.Testing.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
