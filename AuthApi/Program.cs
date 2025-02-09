@@ -1,6 +1,7 @@
 using AuthApi.Data;
 
 using Core.Common;
+using Core.Common.Monitoring;
 using Core.Common.Options;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -58,10 +59,14 @@ app.UseAuthorization();
 app.UseMonitoring();
 app.UseDbInDevelopment<AuthDbContext>();
 
+MetricReporter metricReporter = app.Services.GetRequiredService<MetricReporter>();
+
+string applicationName = app.Environment.ApplicationName;
+
 try
 {
     app.Run();
-    app.ReportServiceUp();
+    metricReporter.ServiceUp(applicationName);
 }
 catch (Exception ex)
 {
@@ -70,5 +75,5 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
-    app.ReportServiceDown();
+    metricReporter.ServiceDown(applicationName);
 }

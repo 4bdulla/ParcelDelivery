@@ -1,4 +1,5 @@
 using Core.Common;
+using Core.Common.Monitoring;
 
 using ParcelApi.Data;
 using ParcelApi.Data.Abstraction;
@@ -24,10 +25,14 @@ WebApplication app = builder.Build();
 app.UseMonitoring();
 app.UseDbInDevelopment<ParcelDbContext>();
 
+MetricReporter metricReporter = app.Services.GetRequiredService<MetricReporter>();
+
+string applicationName = app.Environment.ApplicationName;
+
 try
 {
     app.Run();
-    app.ReportServiceUp();
+    metricReporter.ServiceUp(applicationName);
 }
 catch (Exception ex)
 {
@@ -36,5 +41,7 @@ catch (Exception ex)
 finally
 {
     Log.CloseAndFlush();
-    app.ReportServiceDown();
+    metricReporter.ServiceDown(applicationName);
 }
+
+public partial class Program;
