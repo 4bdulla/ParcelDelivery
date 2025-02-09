@@ -25,3 +25,10 @@ To install the project using Docker Compose, follow these steps:
 ## Usage
 
 In development mode (set `ASPNETCORE_ENVIRONMENT` env variable in `.env `file) , you can access the API documentation at `http://api.localhost/swagger`.
+
+
+## Contribution:
+
+TODOs: 
+- fix authorization errors
+- add E2E tests
