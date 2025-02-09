@@ -40,13 +40,19 @@ public class AuthApi(
     {
         try
         {
-            object result = await this.RegisterAsync(context.Message.Username, context.Message.Password, Constants.UserRole, UserType.User);
+            object result = await this.RegisterAsync(context.Message.Username,
+                context.Message.Password,
+                Constants.UserRole,
+                UserType.User);
 
             await context.RespondAsync(result);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "failed to register {Username} due to: {ErrorMessage}", context.Message.Username, ex.Message);
+            logger.LogError(ex,
+                "failed to register {Username} due to: {ErrorMessage}",
+                context.Message.Username,
+                ex.Message);
 
             await context.RespondAsync(RegistrationFailedResponse.CommonError(ex));
         }
@@ -66,7 +72,10 @@ public class AuthApi(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "failed to register {Username} due to: {ErrorMessage}", context.Message.Username, ex.Message);
+            logger.LogError(ex,
+                "failed to register {Username} due to: {ErrorMessage}",
+                context.Message.Username,
+                ex.Message);
 
             await context.RespondAsync(RegistrationFailedResponse.CommonError(ex));
         }
@@ -82,7 +91,8 @@ public class AuthApi(
             {
                 logger.LogWarning("{Username} unauthorized attempt", context.Message.Username);
 
-                await context.RespondAsync(UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
+                await context.RespondAsync(
+                    UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
 
                 return;
             }
@@ -95,7 +105,8 @@ public class AuthApi(
             {
                 logger.LogWarning("{Username} unauthorized attempt with invalid password", context.Message.Username);
 
-                await context.RespondAsync(UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
+                await context.RespondAsync(
+                    UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
 
                 return;
             }
@@ -104,7 +115,8 @@ public class AuthApi(
             {
                 logger.LogWarning("{Username} unauthorized attempt", context.Message.Username);
 
-                await context.RespondAsync(UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
+                await context.RespondAsync(
+                    UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
 
                 return;
             }
@@ -118,7 +130,9 @@ public class AuthApi(
                 RefreshToken = await this.GenerateRefreshToken(user)
             });
 
-            logger.LogInformation("{Username} logged in with {Role} role", context.Message.Username, context.Message.Role);
+            logger.LogInformation("{Username} logged in with {Role} role",
+                context.Message.Username,
+                context.Message.Role);
         }
         catch (Exception ex)
         {
@@ -159,7 +173,8 @@ public class AuthApi(
             {
                 logger.LogWarning("{Username} not found", context.Message.Username);
 
-                await context.RespondAsync(UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
+                await context.RespondAsync(
+                    UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
 
                 return;
             }
@@ -168,9 +183,12 @@ public class AuthApi(
 
             if (!await userManager.IsInRoleAsync(user, context.Message.Role))
             {
-                logger.LogWarning("{Username} is not in the {Role} role", context.Message.Username, context.Message.Role);
+                logger.LogWarning("{Username} is not in the {Role} role",
+                    context.Message.Username,
+                    context.Message.Role);
 
-                await context.RespondAsync(UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
+                await context.RespondAsync(
+                    UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
 
                 return;
             }
@@ -186,9 +204,13 @@ public class AuthApi(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "failed to create refresh token for {Username} due to {Error}", context.Message.Username, ex.Message);
+            logger.LogError(ex,
+                "failed to create refresh token for {Username} due to {Error}",
+                context.Message.Username,
+                ex.Message);
 
-            await context.RespondAsync(UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
+            await context.RespondAsync(
+                UnauthorizedResponse.Unauthorized(context.Message.Username, context.Message.Role));
         }
     }
 
