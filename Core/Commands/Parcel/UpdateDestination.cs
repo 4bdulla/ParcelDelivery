@@ -11,12 +11,12 @@ public class UpdateDestinationRequest
     /// <summary>
     /// Parcel ID.
     /// </summary>
-    public int ParcelId { get; set; }
+    public required int ParcelId { get; set; }
 
     /// <summary>
     /// New destination.
     /// </summary>
-    public string NewDestination { get; set; }
+    public required string NewDestination { get; set; }
 }
 
 

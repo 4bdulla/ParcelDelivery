@@ -12,13 +12,13 @@ public class UserRegistrationRequest
     /// Gets or sets the username of the new user.
     /// </summary>
     /// <example>john.doe</example>
-    public string Username { get; set; }
+    public required string Username { get; set; }
 
     /// <summary>
     /// Gets or sets the password of the new user.
     /// </summary>
     /// <example>Passw0rd!</example>
-    public string Password { get; set; }
+    public required string Password { get; set; }
 }
 
 

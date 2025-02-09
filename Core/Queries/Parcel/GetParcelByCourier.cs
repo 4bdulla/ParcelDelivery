@@ -11,7 +11,7 @@ public class GetParcelsByCourierRequest
     /// <summary>
     /// Courier ID.
     /// </summary>
-    public int CourierId { get; set; }
+    public required int CourierId { get; set; }
 }
 
 /// <summary>

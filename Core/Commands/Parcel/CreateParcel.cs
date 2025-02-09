@@ -11,17 +11,17 @@ public class CreateParcelRequest
     /// <summary>
     /// User ID.
     /// </summary>
-    public int UserId { get; set; }
+    public required int UserId { get; set; }
 
     /// <summary>
     /// Source address.
     /// </summary>
-    public string SourceAddress { get; set; }
+    public required string SourceAddress { get; set; }
 
     /// <summary>
     /// Destination address.
     /// </summary>
-    public string DestinationAddress { get; set; }
+    public required string DestinationAddress { get; set; }
 }
 
 /// <summary>

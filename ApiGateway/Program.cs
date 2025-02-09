@@ -20,6 +20,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.ConfigureConfiguration();
 builder.AddSerilogConfiguration();
 builder.AddMonitoring();
+builder.AddValidators();
 
 AuthOptions authOptions = builder.ConfigureAuthOptions();
 
@@ -57,7 +58,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         x.RequireHttpsMetadata = false;
         x.SaveToken = true;
 
-        x.SetJwksOptions(new(authOptions.AuthServerAddress, authOptions.JwtIssuer, authOptions.TokenLifetime, authOptions.JwtAudience));
+        x.SetJwksOptions(new(authOptions.AuthServerAddress,
+            authOptions.JwtIssuer,
+            authOptions.TokenLifetime,
+            authOptions.JwtAudience));
     });
 
 builder.Services.AddAuthorization();
@@ -90,3 +94,5 @@ finally
     Log.CloseAndFlush();
     metricReporter.ServiceDown(applicationName);
 }
+
+public partial class Program;

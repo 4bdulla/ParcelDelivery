@@ -11,12 +11,12 @@ public class AssignParcelRequest
     /// <summary>
     /// Parcel ID.
     /// </summary>
-    public int ParcelId { get; set; }
+    public required int ParcelId { get; set; }
 
     /// <summary>
     /// Courier ID.
     /// </summary>
-    public int CourierId { get; set; }
+    public required int CourierId { get; set; }
 }
 
 /// <summary>

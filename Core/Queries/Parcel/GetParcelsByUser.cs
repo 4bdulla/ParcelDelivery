@@ -11,7 +11,7 @@ public class GetParcelsByUserRequest
     /// <summary>
     /// User ID.
     /// </summary>
-    public int UserId { get; set; }
+    public required int UserId { get; set; }
 }
 
 /// <summary>

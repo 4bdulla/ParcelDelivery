@@ -11,7 +11,7 @@ public class GetParcelRequest
     /// <summary>
     /// Parcel ID.
     /// </summary>
-    public int ParcelId { get; set; }
+    public required int ParcelId { get; set; }
 }
 
 /// <summary>

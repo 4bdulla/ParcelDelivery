@@ -185,14 +185,14 @@ public static class Endpoints
     /// </summary>
     /// <param name="request">The request containing ID of the parcel to search for.</param>
     /// <returns>The parcel details.</returns>
-    private static async Task<GetParcelResponse> GetParcel(
+    private static async Task<IResult> GetParcel(
         [AsParameters] GetParcelRequest request,
         [FromServices] IRequestClient<GetParcelRequest> client,
         CancellationToken token)
     {
         Response<GetParcelResponse> response = await client.GetResponse<GetParcelResponse>(request, token);
 
-        return response.Message;
+        return Results.Ok(response.Message);
     }
 
     /// <summary>

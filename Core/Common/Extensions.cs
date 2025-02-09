@@ -18,6 +18,8 @@ using Serilog.Formatting.Compact;
 
 using Prometheus;
 
+using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
+
 
 namespace Core.Common;
 
@@ -45,7 +47,13 @@ public static class Extensions
         builder.Services.AddHealthChecks().ForwardToPrometheus(new PrometheusHealthCheckPublisherOptions());
     }
 
-    public static void AddSqlDbContext<TDbContextInterface, TDbContextImplementation>(this WebApplicationBuilder builder)
+    public static void AddValidators(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddFluentValidationAutoValidation();
+    }
+
+    public static void AddSqlDbContext<TDbContextInterface, TDbContextImplementation>(
+        this WebApplicationBuilder builder)
     where TDbContextImplementation : DbContext, TDbContextInterface
     {
         builder.Services.AddDbContext<TDbContextInterface, TDbContextImplementation>(optionsBuilder =>
@@ -85,7 +93,8 @@ public static class Extensions
 
     public static AuthOptions ConfigureAuthOptions(this WebApplicationBuilder builder)
     {
-        AuthOptions authOptions = builder.Configuration.GetSection(nameof(AuthOptions)).Get<AuthOptions>() ?? AuthOptions.Default;
+        AuthOptions authOptions = builder.Configuration.GetSection(nameof(AuthOptions)).Get<AuthOptions>() ??
+            AuthOptions.Default;
 
         builder.Services.AddSingleton(Microsoft.Extensions.Options.Options.Create(authOptions));
 
@@ -117,23 +126,6 @@ public static class Extensions
         app.MapMetrics();
     }
 
-    public static void ReportServiceUp(this WebApplication app)
-    {
-        using IServiceScope scope = app.Services.CreateScope();
-
-        MetricReporter reporter = scope.ServiceProvider.GetRequiredService<MetricReporter>();
-
-        reporter.ServiceUp(app.Environment.ApplicationName);
-    }
-
-    public static void ReportServiceDown(this WebApplication app)
-    {
-        using IServiceScope scope = app.Services.CreateScope();
-
-        MetricReporter reporter = scope.ServiceProvider.GetRequiredService<MetricReporter>();
-
-        reporter.ServiceDown(app.Environment.ApplicationName);
-    }
 
     private static void UseFilters<T>(this IPipeConfigurator<T> configurator)
     where T : class, PipeContext

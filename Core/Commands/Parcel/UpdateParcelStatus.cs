@@ -11,12 +11,12 @@ public class UpdateParcelStatusRequest
     /// <summary>
     /// Parcel ID.
     /// </summary>
-    public int ParcelId { get; set; }
+    public required int ParcelId { get; set; }
 
     /// <summary>
     /// New status.
     /// </summary>
-    public ParcelStatus NewStatus { get; set; }
+    public required ParcelStatus NewStatus { get; set; }
 }
 
 /// <summary>
