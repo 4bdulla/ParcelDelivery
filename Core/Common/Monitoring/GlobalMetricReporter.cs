@@ -3,7 +3,7 @@ using Prometheus;
 
 namespace Core.Common.Monitoring;
 
-public class GlobalMetricReporter
+public class MetricReporter
 {
     private readonly Gauge _serviceStatusGauge = Metrics.CreateGauge(
         "service_status",

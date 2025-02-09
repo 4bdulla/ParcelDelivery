@@ -10,7 +10,7 @@ using ITimer = Prometheus.ITimer;
 
 namespace Core.Common.Filters;
 
-public class MonitoringSpecification<T>(GlobalMetricReporter reporter) : IPipeSpecification<T>
+public class MonitoringSpecification<T>(MetricReporter reporter) : IPipeSpecification<T>
 where T : class, PipeContext
 {
     public void Apply(IPipeBuilder<T> builder) => builder.AddFilter(new MonitoringFilter<T>(reporter));
@@ -19,7 +19,7 @@ where T : class, PipeContext
 }
 
 
-public class MonitoringFilter<T>(GlobalMetricReporter reporter) : IFilter<T>
+public class MonitoringFilter<T>(MetricReporter reporter) : IFilter<T>
 where T : class, PipeContext
 {
     public async Task Send(T context, IPipe<T> next)
