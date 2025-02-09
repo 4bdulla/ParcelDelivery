@@ -26,7 +26,6 @@ where TDbContext : DbContext, TDbContextInterface
 {
     public ITestHarness TestHarness => base.Services.GetTestHarness();
     public TDbContext DbContext => this.GetRequiredService<TDbContext>();
-    public IMapper Mapper => this.GetRequiredService<IMapper>();
 
 
     public void EnsureDbCreated()
