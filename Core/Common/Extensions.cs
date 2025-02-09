@@ -41,7 +41,7 @@ public static class Extensions
 
     public static void AddMonitoring(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<GlobalMetricReporter>();
+        builder.Services.AddSingleton<MetricReporter>();
         builder.Services.AddHealthChecks().ForwardToPrometheus(new PrometheusHealthCheckPublisherOptions());
     }
 
@@ -121,7 +121,7 @@ public static class Extensions
     {
         using IServiceScope scope = app.Services.CreateScope();
 
-        GlobalMetricReporter reporter = scope.ServiceProvider.GetRequiredService<GlobalMetricReporter>();
+        MetricReporter reporter = scope.ServiceProvider.GetRequiredService<MetricReporter>();
 
         reporter.ServiceUp(app.Environment.ApplicationName);
     }
@@ -130,7 +130,7 @@ public static class Extensions
     {
         using IServiceScope scope = app.Services.CreateScope();
 
-        GlobalMetricReporter reporter = scope.ServiceProvider.GetRequiredService<GlobalMetricReporter>();
+        MetricReporter reporter = scope.ServiceProvider.GetRequiredService<MetricReporter>();
 
         reporter.ServiceDown(app.Environment.ApplicationName);
     }
@@ -139,6 +139,6 @@ public static class Extensions
     where T : class, PipeContext
     {
         configurator.AddPipeSpecification(new LoggingSpecification<T>());
-        configurator.AddPipeSpecification(new MonitoringSpecification<T>(new GlobalMetricReporter()));
+        configurator.AddPipeSpecification(new MonitoringSpecification<T>(new MetricReporter()));
     }
 }
