@@ -58,7 +58,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         x.RequireHttpsMetadata = false;
         x.SaveToken = true;
 
-        x.SetJwksOptions(new(authOptions.AuthServerAddress,
+        x.SetJwksOptions(new(
+            authOptions.AuthServerAddress,
             authOptions.JwtIssuer,
             authOptions.TokenLifetime,
             authOptions.JwtAudience));
