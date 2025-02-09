@@ -77,3 +77,5 @@ finally
     Log.CloseAndFlush();
     metricReporter.ServiceDown(applicationName);
 }
+
+public partial class Program;
