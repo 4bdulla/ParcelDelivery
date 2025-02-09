@@ -32,7 +32,10 @@ public class ParcelDbContext(DbContextOptions<ParcelDbContext> options) : DbCont
     /// <param name="id">The parcel ID.</param>
     /// <returns>The parcel.</returns>
     public async Task<Parcel> GetParcelByIdAsync(int id) =>
-        await this.Parcels.Include(p => p.DeliveryDetails).Include(p => p.ParcelDetails).FirstOrDefaultAsync(p => p.Id.Equals(id));
+        await this.Parcels
+            .Include(p => p.DeliveryDetails)
+            .Include(p => p.ParcelDetails)
+            .FirstOrDefaultAsync(p => p.Id.Equals(id));
 
     /// <summary>
     /// Gets all parcels.

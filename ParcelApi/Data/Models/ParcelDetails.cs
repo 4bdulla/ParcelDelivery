@@ -4,7 +4,6 @@ using AutoMapper;
 
 using Core.Dto;
 
-using ParcelApi.Data.Abstraction;
 
 namespace ParcelApi.Data.Models;
 
@@ -13,7 +12,7 @@ namespace ParcelApi.Data.Models;
 /// </summary>
 [AutoMap(typeof(ParcelDetailsDto), ReverseMap = true)]
 [Table(nameof(ParcelDbContext.ParcelDetails), Schema = nameof(ParcelApi))]
-public class ParcelDetails : IUniqueItem
+public class ParcelDetails
 {
     /// <summary>
     /// Unique identifier.
