@@ -8,6 +8,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 
 using ParcelApi.Data;
+using ParcelApi.Data.Abstraction;
 using ParcelApi.Data.Models;
 
 using Test.Utility;
@@ -18,7 +19,7 @@ namespace ParcelApi.IntegrationTests;
 [Collection(nameof(IntegrationTestsCollection))]
 public class ParcelDbContextTests : IDisposable
 {
-    private readonly ParcelApiWebApplicationFactory _factory;
+    private readonly ParcelDeliveryWebApplicationFactory<Program, IParcelDbContext, ParcelDbContext> _factory;
     private readonly ParcelDbContext _sut;
 
     public ParcelDbContextTests()
