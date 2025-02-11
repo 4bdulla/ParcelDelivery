@@ -34,9 +34,7 @@ public class AuthApiTests
 
 
     [Theory, InlineAutoMoqData]
-    public async Task Login_CommonError_ShouldNotFail(
-        ConsumeContext<LoginRequest> context,
-        Services.AuthApi sut)
+    public async Task Login_CommonError_ShouldNotFail(ConsumeContext<LoginRequest> context, Services.AuthApi sut)
     {
         // Act & Assert
         await sut.Invoking(x => x.Consume(context)).Should().NotThrowAsync();
