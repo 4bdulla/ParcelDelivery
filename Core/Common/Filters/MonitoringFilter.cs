@@ -24,7 +24,14 @@ where T : class, PipeContext
 {
     public async Task Send(T context, IPipe<T> next)
     {
-        string requestName = typeof(T).Name;
+        if (!context.TryGetPayload(out T payload))
+        {
+            await next.Send(context);
+
+            return;
+        }
+
+        string requestName = payload.GetType().Name;
 
         using ITimer timer = reporter.RequestProcessingDuration.WithLabels(requestName).NewTimer();
         using IDisposable progress = reporter.RequestInProcess.WithLabels(requestName).TrackInProgress();
