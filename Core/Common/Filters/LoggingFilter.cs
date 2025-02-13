@@ -24,7 +24,7 @@ where T : class, PipeContext
     {
         var sw = Stopwatch.StartNew();
 
-        Log.Information("processing message {@Context}", context);
+        Log.ForContext<LoggingFilter<T>>().Verbose("processing message {@Context}", context.GetPayload<T>());
 
         try
         {
@@ -32,13 +32,13 @@ where T : class, PipeContext
         }
         catch (Exception ex)
         {
-            Log.Error(ex, "failed to process message: {ExceptionMessage}", ex.Message);
+            Log.ForContext<LoggingFilter<T>>().Error(ex, "failed to process message: {ExceptionMessage}", ex.Message);
 
             throw;
         }
         finally
         {
-            Log.Verbose("message processed in {Elapsed}ms", sw.Elapsed);
+            Log.ForContext<LoggingFilter<T>>().Verbose("message processed in {Elapsed}ms", sw.Elapsed);
         }
     }
 
