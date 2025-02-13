@@ -11,6 +11,7 @@
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.12"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
         <PackageReference Include="NetDevPack.Security.Jwt.AspNetCore" Version="8.1.5" />
+        <PackageReference Include="NetDevPack.Security.Jwt.Store.EntityFrameworkCore" Version="8.1.5" />
         <PackageReference Include="NetDevPack.Security.JwtExtensions" Version="8.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>

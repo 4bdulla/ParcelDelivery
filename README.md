@@ -2,7 +2,8 @@
 
 ## Overview
 
-This is a demo project designed to manage and track parcel deliveries efficiently. It provides features for creating, updating, and tracking parcels, as well as managing delivery routes and schedules.
+This is a demo project designed to manage and track parcel deliveries efficiently. It provides features for creating,
+updating, and tracking parcels, as well as managing delivery routes and schedules.
 
 ## Installation
 
@@ -14,21 +15,30 @@ To install the project using Docker Compose, follow these steps:
    ```
 2. Navigate to the project directory:
    ```bash
-   cd ParcelDelivery/deploy
+   cd ParcelDelivery
    ```
 3. Create a `.env` file and configure the necessary environment variables. (or use existing one)
 4. Start the services using Docker Compose:
+
+   - on Linux machines run:
    ```bash
-   docker-compose --env-file .env up -d --remove-orphans
+   chmod +x ./run.sh
+   ./run.sh
    ```
+   - on Windows machines run:
+   ```powershell
+   ./run.ps1
+   ```
+
 
 ## Usage
 
-In development mode (set `ASPNETCORE_ENVIRONMENT` env variable in `.env `file) , you can access the API documentation at `http://api.localhost/swagger`.
+In development mode (set `ASPNETCORE_ENVIRONMENT` env variable in `.env `file to `Development`) database is created 
+automatically.
 
+API documentation: `http://api.localhost:443/swagger`.
 
-## Contribution:
+[Traefik](https://doc.traefik.io/traefik/v3.3/) dashboard at `http://traefik.localhost:443/dashboard/#`
 
-TODOs: 
-- fix authorization errors
-- add E2E tests
+NOTES:
+- add E2E testing
