@@ -23,14 +23,15 @@ services:
     image: api-gateway
     container_name: api-gateway
     build:
-      context: ../ApiGateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ApiGateway/Dockerfile
     environment:
       - RABBIT_HOST=$RABBIT_HOST
       - RABBIT_USER=$RABBIT_USER
       - RABBIT_PASSWORD=$RABBIT_PASSWORD
       - AUTH_HOST=$AUTH_HOST
       - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+      - ASPNETCORE_HTTP_PORTS=$ASPNETCORE_HTTP_PORTS
     labels:
       - "prometheus-job=api-gateway"
       - "traefik.enable=true"
@@ -39,21 +40,24 @@ services:
     depends_on:
       - auth-api
       - parcel-api
+      - rabbit-mq
   
   auth-api:
     image: auth-api
     container_name: $AUTH_HOST
     build:
-      context: ../AuthApi
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: AuthApi/Dockerfile
     environment:
       - RABBIT_HOST=$RABBIT_HOST
       - RABBIT_USER=$RABBIT_USER
       - RABBIT_PASSWORD=$RABBIT_PASSWORD
+      - AUTH_HOST=$AUTH_HOST
       - DB_HOST=$DB_HOST
       - DATABASE=AuthApi
       - DB_PASSWORD=$DB_PASSWORD
       - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+      - ASPNETCORE_HTTP_PORTS=$ASPNETCORE_HTTP_PORTS
     labels:
       - "prometheus-job=auth-api"
     depends_on:
@@ -64,8 +68,8 @@ services:
     image: parcel-api
     container_name: parcel-api
     build:
-      context: ../ParcelApi
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ParcelApi/Dockerfile
     environment:
       - RABBIT_HOST=$RABBIT_HOST
       - RABBIT_USER=$RABBIT_USER
@@ -74,6 +78,7 @@ services:
       - DATABASE=ParcelApi
       - DB_PASSWORD=$DB_PASSWORD
       - ASPNETCORE_ENVIRONMENT=$ASPNETCORE_ENVIRONMENT
+      - ASPNETCORE_HTTP_PORTS=$ASPNETCORE_HTTP_PORTS
     labels:
       - "prometheus-job=parcel-api"
     depends_on:
