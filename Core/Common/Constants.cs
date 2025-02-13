@@ -1,6 +1,9 @@
 ﻿namespace Core.Common;
 
-public static class Constants
+/// <summary>
+/// Serves as role name accessor and as Core project marker
+/// </summary>
+public class Constants
 {
     public const string AdminRole = "Admin";
     public const string UserRole = "User";

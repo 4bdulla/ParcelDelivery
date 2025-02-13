@@ -4,6 +4,8 @@ using Core.Common.Filters;
 using Core.Common.Monitoring;
 using Core.Common.Options;
 
+using FluentValidation;
+
 using MassTransit;
 
 using Microsoft.AspNetCore.Builder;
@@ -37,6 +39,8 @@ public static class Extensions
             .MinimumLevel.Verbose()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .MinimumLevel.Override("MassTransit", LogEventLevel.Warning)
+            .MinimumLevel.Override("Core.Common.Filters", LogEventLevel.Warning)
+            .MinimumLevel.Override("Serilog", LogEventLevel.Warning)
             .WriteTo.Console(new RenderedCompactJsonFormatter())
             .ReadFrom.Services(services));
     }
@@ -49,6 +53,7 @@ public static class Extensions
 
     public static void AddValidators(this WebApplicationBuilder builder)
     {
+        builder.Services.AddValidatorsFromAssemblyContaining<Constants>();
         builder.Services.AddFluentValidationAutoValidation();
     }
 
@@ -93,14 +98,33 @@ public static class Extensions
 
     public static AuthOptions ConfigureAuthOptions(this WebApplicationBuilder builder)
     {
-        AuthOptions authOptions = builder.Configuration.GetSection(nameof(AuthOptions)).Get<AuthOptions>() ??
-            AuthOptions.Default;
+        AuthOptions options = builder.Configuration.GetSection(nameof(AuthOptions)).Get<AuthOptions>();
+
+        if (!builder.Environment.IsDevelopment() && options is null)
+            throw new InvalidOperationException($"{nameof(AuthOptions)} is not configured!");
+
+        AuthOptions authOptions = options ?? AuthOptions.Default;
 
         builder.Services.AddSingleton(Microsoft.Extensions.Options.Options.Create(authOptions));
 
         return authOptions;
     }
 
+
+    public static void UseSerilogMiddleware(this WebApplication app)
+    {
+        app.UseSerilogRequestLogging(options =>
+        {
+            options.GetLevel += (context, elapsed, ex) =>
+                ex is not null || context?.Response.StatusCode >= 500
+                    ? LogEventLevel.Error
+                    : context?.Response.StatusCode >= 400
+                        ? LogEventLevel.Warning
+                        : elapsed > TimeSpan.FromSeconds(2).TotalMilliseconds
+                            ? LogEventLevel.Warning
+                            : LogEventLevel.Verbose;
+        });
+    }
 
     public static void UseDbInDevelopment<TDbContext>(this WebApplication app)
     where TDbContext : DbContext

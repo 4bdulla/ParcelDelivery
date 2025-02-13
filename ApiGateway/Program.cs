@@ -29,7 +29,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var coreDocsFilename = $"{typeof(ParcelNotFoundResponse).Assembly.GetName().Name}.xml";
+    var coreDocsFilename = $"{typeof(Constants).Assembly.GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, coreDocsFilename));
 
@@ -57,6 +57,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         x.RequireHttpsMetadata = false;
         x.SaveToken = true;
+        x.IncludeErrorDetails = builder.Environment.IsDevelopment();
 
         x.SetJwksOptions(new(
             authOptions.AuthServerAddress,
@@ -69,7 +70,7 @@ builder.Services.AddAuthorization();
 
 WebApplication app = builder.Build();
 
-app.UseSerilogRequestLogging();
+app.UseSerilogMiddleware();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSwagger();
